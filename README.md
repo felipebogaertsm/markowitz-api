@@ -1,2 +1,1 @@
-# markowitz-api
- 
+# Markowitz Optimizer REST API
