@@ -1,0 +1,11 @@
+services:
+  api:
+    build: api/
+    container_name: markowitz-api
+    env_file:
+      - ./.envs/dev.env
+    volumes:
+      - ./api/:/usr/app/
+    entrypoint: |
+      bash -c "python3 manage.py migrate --no-input && 
+        python3 manage.py runserver 0.0.0.0:8000"
