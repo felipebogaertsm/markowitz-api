@@ -20,6 +20,27 @@ results with less files and a simpler architecture.
 
 3. Run the `docker compose up` command. Make sure Docker is pre-installed and running.
 
+# How to use it
+
+Once the set up has been completed, the application should be running in localhost port 8000. In order to test it,
+make a GET request to the main endpoint by entering the following string in your browser's URL bar:
+
+`http://localhost:8000/api/optimizer?tickers=AAPL,MSFT&target_return=10`
+
+Your response should be something like that:
+
+```
+{
+    "optimized_weights": [
+        1.0,
+        0.0
+    ],
+    "expected_return": 0.31560102462129547,
+    "volatility": 0.19967570436575924,
+    "sharpe_ratio": 1.3301619516752847
+}
+```
+
 # References
 
 The official documentation for Polygon was used.
@@ -27,3 +48,7 @@ The official documentation for Polygon was used.
 https://github.com/polygon-io/client-python
 
 https://polygon.io/docs/stocks/getting-started
+
+```
+
+```
