@@ -19,3 +19,11 @@ results with less files and a simpler architecture.
 2. Add "dev.env" file to the ".envs" folder. Follow the preset in the "example.env" file.
 
 3. Run the `docker compose up` command. Make sure Docker is pre-installed and running.
+
+# References
+
+The official documentation for Polygon was used.
+
+https://github.com/polygon-io/client-python
+
+https://polygon.io/docs/stocks/getting-started

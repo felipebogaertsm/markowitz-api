@@ -6,46 +6,33 @@ from rest_framework.response import Response
 
 from optimizer.serializers import PortfolioOptimizationSerializer
 from optimizer.services import optimize_portfolio
-from optimizer.services.polygon import fetch_historical_data
+from optimizer.services.polygon import fetch_close_price_for_tickers_1yr
 
 RISK_FREE_RATE = 0.05
+TARGET_RETURN = 0.1
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def optimizer_api(request):
     """
-    This is the API for the optimizer.
-
+    API view for the optimizer.
     """
-    serializer = PortfolioOptimizationSerializer(data=request.data)
+    serializer = PortfolioOptimizationSerializer(data=request.query_params)
+
     if serializer.is_valid():
         tickers = serializer.validated_data["tickers"].split(",")
-        from_date = serializer.validated_data["from_date"]
-        to_date = serializer.validated_data["to_date"]
         target_return = serializer.validated_data["target_return"]
 
         # Fetch historical data
-        historical_data = {
-            ticker: fetch_historical_data(ticker, str(from_date), str(to_date))
-            for ticker in tickers
-        }
-
-        # Convert historical data to a DataFrame
-        data_frames = []
-        for ticker, data in historical_data.items():
-            df = pd.DataFrame(data)
-            df.set_index(pd.to_datetime(df["timestamp"]), inplace=True)
-            df[ticker] = df["close"]
-            data_frames.append(df[[ticker]])
-
-        # Combine all DataFrames
-        combined_df = pd.concat(data_frames, axis=1)
+        historical_data = fetch_close_price_for_tickers_1yr(tickers=tickers)
 
         # Calculate daily returns
-        returns = combined_df.pct_change().dropna()
-
-        # Define risk-free rate
-        risk_free_rate = 0.01  # This is an example value
+        historical_data.set_index("timestamp", inplace=True)
+        returns = (
+            historical_data.pivot(columns="ticker")["close"]
+            .pct_change()
+            .dropna()
+        )
 
         # Perform optimization
         (
@@ -53,7 +40,7 @@ def optimizer_api(request):
             expected_return,
             volatility,
             sharpe_ratio,
-        ) = optimize_portfolio(returns.values, risk_free_rate, target_return)
+        ) = optimize_portfolio(returns.values, RISK_FREE_RATE, target_return)
 
         return Response(
             {

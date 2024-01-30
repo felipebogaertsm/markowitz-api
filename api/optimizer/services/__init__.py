@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.optimize import minimize
 
+from .math import calculate_covariance_matrix
+
 
 def optimize_portfolio(
     returns: np.ndarray, risk_free_rate: float, target_return: float
@@ -26,7 +28,9 @@ def optimize_portfolio(
         and Sharpe ratio.
     """
 
-    def portfolio_statistics(weights: np.ndarray) -> tuple[float, float, float]:
+    def portfolio_statistics(
+        weights: np.ndarray,
+    ) -> tuple[float, float, float]:
         """
         Calculates portfolio statistics: return, volatility, and Sharpe ratio.
 
@@ -36,17 +40,23 @@ def optimize_portfolio(
         Returns:
         Tuple[float, float, float]: Portfolio return, volatility, and Sharpe ratio.
         """
-        portfolio_return = np.sum(returns.mean() * weights) * 252
+        portfolio_return = np.sum(returns.mean(axis=0) * weights) * 252
+        covariance_matrix = calculate_covariance_matrix(returns)
         portfolio_volatility = np.sqrt(
-            np.dot(weights.T, np.dot(returns.cov() * 252, weights))
+            np.dot(weights.T, np.dot(covariance_matrix * 252, weights))
         )
-        sharpe_ratio = (portfolio_return - risk_free_rate) / portfolio_volatility
+        sharpe_ratio = (
+            portfolio_return - risk_free_rate
+        ) / portfolio_volatility
         return portfolio_return, portfolio_volatility, sharpe_ratio
 
     num_assets = returns.shape[1]
     constraints = (
         {"type": "eq", "fun": lambda x: np.sum(x) - 1},
-        {"type": "eq", "fun": lambda x: portfolio_statistics(x)[0] - target_return},
+        {
+            "type": "eq",
+            "fun": lambda x: portfolio_statistics(x)[0] - target_return,
+        },
     )
     bounds = tuple((0, 1) for _ in range(num_assets))
     initial_guess = num_assets * [1.0 / num_assets]
