@@ -48,7 +48,3 @@ The official documentation for Polygon was used.
 https://github.com/polygon-io/client-python
 
 https://polygon.io/docs/stocks/getting-started
-
-```
-
-```
